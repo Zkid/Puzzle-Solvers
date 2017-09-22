@@ -1,6 +1,7 @@
 import random
 import math
 
+# Returns a random sorted list of <nums> values that sum to <total>.
 def gen_random_blotto(nums, total):
 	vals = [0] * (nums - 1)
 	for i in range(nums - 1):
@@ -36,6 +37,49 @@ def match_blottos_2(my_blotto, random_blotto, values):
 
 	return points
 
+def blotto_mutation_generator(my_blotto, mutations):
+	new_blotto = my_blotto[:]
+	for i in range(mutations):
+		(inc, dec) = random.sample(range(0, len(my_blotto)), 2)
+		if new_blotto[dec] > 0:
+			new_blotto[inc] += 1
+			new_blotto[dec] -= 1
+	return sorted(new_blotto)
+
+def get_blotto_score(my_blotto, values, enemy_blottos=1000):
+	BATTLEFIELDS = len(my_blotto)
+	SOLDIERS = sum(my_blotto)
+	points = 0.0
+	for i in range(enemy_blottos):
+		enemy_blotto = gen_random_blotto(BATTLEFIELDS, SOLDIERS)
+		points += match_blottos_2(my_blotto, enemy_blotto, values)
+	return (points/enemy_blottos)
+
+def generate_best_blottos(BATTLEFIELDS, SOLDIERS, values, blottos=20, steps=10):
+	blotto_list = []
+	blotto_scores = []
+	for i in range(blottos):
+		blotto = gen_random_blotto(BATTLEFIELDS, SOLDIERS)
+		blotto_list.append(blotto)
+
+	for step in range(steps):
+		blotto_scores = []
+		for blotto in blotto_list:
+			blotto_scores.append(get_blotto_score(blotto, values))
+
+		blotto_tuples = zip(blotto_scores, blotto_list)
+		blotto_tuples.sort()
+		print blotto_tuples[-1]
+		new_blottos = []
+		for i in range(-(blottos/10), 0): 
+			new_blottos.append(blotto_tuples[i][1])
+			for j in range(4):
+				new_blottos.append(blotto_mutation_generator(blotto_tuples[i][1], 3+2*j))
+			for k in range(5):
+				new_blottos.append(gen_random_blotto(BATTLEFIELDS, SOLDIERS))
+		blotto_list = new_blottos
+
+
 BATTLEFIELDS = 7
 SOLDIERS = 100
 VALUES = [1, 1, 1, 1, 2, 2, 3]
@@ -47,7 +91,11 @@ best_points = -1
 best_blotto = gen_random_blotto(BATTLEFIELDS, SOLDIERS)
 counter = 0
 
-while True:
+my_blotto = [1, 1, 4, 5, 21, 27, 41]
+
+generate_best_blottos(BATTLEFIELDS, SOLDIERS, VALUES_2, 100, 100)
+
+'''while True:
 	counter += 1
 	new_blotto = gen_random_blotto(BATTLEFIELDS, SOLDIERS)
 	if counter % 5000 == 0:
@@ -68,7 +116,8 @@ while True:
 		if matchup_points > 0:
 			best_points = average_points
 			best_blotto = new_blotto
-			print str(best_blotto) + ", " + str(best_points) + ", "  + str(counter)
+			print str(best_blotto) + ", " + str(best_points) + ", "  + str(counter)'''
+
 '''
 best_blotto = [0, 0, 1, 2, 4, 34, 59]
 new_blotto = []
